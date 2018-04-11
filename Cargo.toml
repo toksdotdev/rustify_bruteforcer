@@ -2,6 +2,12 @@
 name = "rustify_bruteforcer"
 version = "0.1.0"
 authors = ["Tochukwu Nkemdilim <nkemdilimtochukwu@gmail.com>"]
+description = "A multi-platform and multi-threaded wifi bruteforcer written in Rust."
+license = "MIT"
+keywords = ["wifi", "bruteforce", "permutation", "network", "algorithms"]
+categories = ["algorithms"]
+repository = "https://github.com/TNkemdilim/rustify_bruteforcer"
+readme = "README.md"
 
 [dependencies]
 permutohedron = "0.2.4"

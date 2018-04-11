@@ -42,5 +42,4 @@ fn main() {
 - [ ] Perform benchmark experiment 1
 - [ ] Improve bruteforcing algorithm
 - [ ] Perform benchmark experiments 2
-- [ ] Integrate password notifcation via email
-- [ ] Add support for integrating as firmware on an arduino board (for handhelds).
+- [ ] Add firmware support for arduino board (for handhelds).
