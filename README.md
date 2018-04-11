@@ -15,7 +15,12 @@ extern crate rustify_bruteforcer;
 use rustify_bruteforcer::*;
 
 fn main() {
-  let config = Config::new("AndroidAp", Some("belm2453".to_string()));
+  // Default: Aggressive bruteforce
+  let config = Config::new("AndroidAp", None));
+  
+  // or 
+  // Patterned bruteforce: input characters you feel might occure in password
+  // let config = Config::new("AndroidAp", Some("bBeElLmM2453jJ7".to_string()));
 
   let mut bruteforcer = match WifiBruteforcer::new(config) {
     Ok(client) => client,
