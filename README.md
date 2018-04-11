@@ -33,6 +33,7 @@ fn main() {
 - [x] Test out simple bruteforcing algorithm
 - [x] Bundle windows profile sample as literals
 - [x] Add support for windows OS
+- [ ] Write documentation
 - [ ] Move key variables to `.env`
 - [ ] Add support for linux
 - [ ] Add support for OSX
