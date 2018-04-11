@@ -1,0 +1,8 @@
+[package]
+name = "rustify_bruteforcer"
+version = "0.1.0"
+authors = ["Tochukwu Nkemdilim <nkemdilimtochukwu@gmail.com>"]
+
+[dependencies]
+permutohedron = "0.2.4"
+dotenv = "0.11.0"
