@@ -7,17 +7,13 @@ use std::io;
 use file_writer::FileWriter;
 use self::permutohedron::heap_recursive;
 
-const OUTPUT_XML_FILE_PATH: &str = "output-1.xml";
-
-// this profile.xml isn't needed currently, hence it's just a dummy variable...
-const TEMPLATE_PROFILE_XML_PATH: &str = "profile.xml"; 
+const OUTPUT_XML_FILE_PATH: &str = "output.xml";
 
 pub struct WifiBruteforcer<'a> {
   config: Config<'a>,
-  profile_xml_path: &'a str,
   output_xml_path: &'a str,
   profile_network: ProfileNetwork<'a>,
-  xml_handler: Option<NetworkXmlProfileHandler<'a>>,
+  xml_handler: Option<NetworkXmlProfileHandler>,
 }
 
 impl<'a> WifiBruteforcer<'a> {
@@ -25,7 +21,6 @@ impl<'a> WifiBruteforcer<'a> {
     match ProfileNetwork::new(config.ssid) {
       Ok(network) => Ok(WifiBruteforcer {
         config,
-        profile_xml_path: TEMPLATE_PROFILE_XML_PATH,
         output_xml_path: OUTPUT_XML_FILE_PATH,
         profile_network: network,
         xml_handler: None,
@@ -59,7 +54,7 @@ impl<'a> WifiBruteforcer<'a> {
 
   pub fn perform_attack(&mut self) -> Result<Option<String>, io::Error> {
     if self.xml_handler.is_none() {
-      self.xml_handler = Some(NetworkXmlProfileHandler::new(self.profile_xml_path)?);
+      self.xml_handler = Some(NetworkXmlProfileHandler::new()?);
     }
 
     let original_xml_data = self.xml_handler.as_ref().unwrap().content.clone().unwrap(); // is safe to unwrap because of handling above
