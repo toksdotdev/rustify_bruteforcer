@@ -12,3 +12,4 @@ readme = "README.md"
 [dependencies]
 permutohedron = "0.2.4"
 dotenv = "0.11.0"
+tokio = "0.1"
