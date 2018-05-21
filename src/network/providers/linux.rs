@@ -9,12 +9,6 @@ pub struct Linux {
 
 impl Linux {
   pub fn new(name: String) -> Result<Self, io::Error> {
-    // let profile_file_name = format!("netsh wlan add profile filename=\"{}\"", name);
-
-    // Command::new("cmd")
-    //   .args(&["/C", &profile_file_name[..]])
-    //   .output()?;
-    
     // detect the network type here (and call: check_if_web_or_wpa here)
 
     Ok(Linux {
@@ -29,7 +23,7 @@ impl Linux {
       self.name
     );
 
-    Command::new("bash")
+    Command::new("sh")
       .args(&["/C", &command[..]])
       .output()
       .map_err(|err| NetworkTypeParseError::IoError(err))
@@ -49,7 +43,7 @@ impl Linux {
       self.name
     ); // using some dummy password here
 
-    Command::new("cmd").args(&[&command[..]]).output()
+    Command::new("sh").args(&[&command[..]]).output()
   }
 
   pub fn connect_to_wpa_network(&self) -> Result<Output, io::Error> {
@@ -58,7 +52,7 @@ impl Linux {
       self.name
     ); // using some dummy password here
 
-    Command::new("cmd").args(&[&command[..]]).output()
+    Command::new("sh").args(&[&command[..]]).output()
   }
 }
 
