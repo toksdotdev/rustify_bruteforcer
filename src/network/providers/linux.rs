@@ -9,11 +9,13 @@ pub struct Linux {
 
 impl Linux {
   pub fn new(name: String) -> Result<Self, io::Error> {
-    let profile_file_name = format!("netsh wlan add profile filename=\"{}\"", name);
+    // let profile_file_name = format!("netsh wlan add profile filename=\"{}\"", name);
 
-    Command::new("cmd")
-      .args(&["/C", &profile_file_name[..]])
-      .output()?;
+    // Command::new("cmd")
+    //   .args(&["/C", &profile_file_name[..]])
+    //   .output()?;
+    
+    // detect the network type here (and call: check_if_web_or_wpa here)
 
     Ok(Linux {
       name,
