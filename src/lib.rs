@@ -8,7 +8,7 @@ mod network;
 mod stubs;
 mod wifi;
 
-#[cfg(all(target_os = "windows"))]
+#[cfg(all(target_os = "windows", target_os = "linux"))]
 pub mod prelude {
     pub use config::Config;
     pub use wifi::WifiBruteforcer;
