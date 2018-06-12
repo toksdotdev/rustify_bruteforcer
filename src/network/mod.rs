@@ -1,12 +1,14 @@
 mod profile_network;
 pub mod providers;
 
+use wifi::WifiBruteforcer;
 pub(crate) use self::profile_network::ProfileNetwork;
 use std::string::FromUtf8Error;
 use std::io;
 
 pub trait Network {
-  fn connect(&self) -> bool;
+  fn connect(&self, password: &str) -> bool;
+  fn perform_attack(&self, bruteforcer: &mut WifiBruteforcer) -> Result<Option<String>, io::Error>;
 }
 
 pub enum NetworkType {

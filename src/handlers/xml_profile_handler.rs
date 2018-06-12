@@ -1,5 +1,5 @@
-use std::io::{self, Write};
-use std::fs::File;
+use std::fs;
+use std::io;
 use stubs::windows_wifi_profile;
 
 pub(crate) struct NetworkXmlProfileHandler {
@@ -8,15 +8,13 @@ pub(crate) struct NetworkXmlProfileHandler {
 
 impl NetworkXmlProfileHandler {
   pub fn new() -> Result<Self, io::Error> {
-    let mut handler = NetworkXmlProfileHandler {
-      content: None,
-    };
+    let mut handler = NetworkXmlProfileHandler { content: None };
 
     match handler.read_from_stub() {
-      Ok(content) => {
+      | Ok(content) => {
         handler.content = Some(content);
       }
-      Err(err) => {
+      | Err(err) => {
         return Err(err);
       }
     };
@@ -27,16 +25,16 @@ impl NetworkXmlProfileHandler {
   fn read_from_stub(&self) -> Result<String, io::Error> {
     Ok(windows_wifi_profile::get_wifi_profile())
   }
-  
-  pub fn to_file(&mut self, file_path: &str) -> Result<(), io::Error> {
-    // Recreate the file and dump the processed contents to it
-    let mut dst = File::create(file_path)?;
 
-    if self.content == None {
+  /// Recreate the file and dump the processed contents to it
+  pub fn to_file(&mut self, file_path: &str) -> Result<(), io::Error> {
+    if self.content.is_none() {
       self.content = Some(self.read_from_stub()?);
     }
-    dst.write(self.content.as_ref().unwrap().as_bytes())?;
 
-    Ok(())
+    Ok(fs::write(
+      &file_path,
+      self.content.as_ref().unwrap().as_bytes(),
+    )?)
   }
 }
