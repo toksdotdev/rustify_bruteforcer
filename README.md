@@ -12,25 +12,25 @@ This is for educational purposes, and should only be tested on your personal wif
 ```RUST
 extern crate rustify_bruteforcer;
 
-use rustify_bruteforcer::*;
+use std::io;
+use rustify_bruteforcer::prelude::*;
 
-fn main() {
-  // Default: Aggressive bruteforce
-  let config = Config::new("AndroidAp", None));
-  
-  // or 
-  // Patterned bruteforce: input characters you feel might occure in password
-  // let config = Config::new("AndroidAp", Some("bBeElLmM2453jJ7".to_string()));
+fn main() -> Result<(), io::Error> {
+    // Default: Aggressive bruteforce
+    let config = Config::new("AndroidAp", None));
+    
+    // or 
+    // Use Patterned Bruteforce: Input characters you feel might occure in password
+    // let config = Config::new("AndroidAp", Some("bBeElLmM2453jJ7".to_string()));
 
-  let mut bruteforcer = match WifiBruteforcer::new(config) {
-    Ok(client) => client,
-    Err(err) => panic!("{}", err),
-  };
+    let mut bruteforcer = WifiBruteforcer::new(config)?;
 
-  match bruteforcer.perform_attack() {
-    Ok(password) => println!("The password is: {}", password.unwrap()),
-    Err(err) => eprintln!("{}", err),
-  }
+    match bruteforcer.perform_attack()? {
+        Some(password) => println!("The password is: {}", password),
+        None => println!("Don't know what went wrong, but was unable to buteforce the network")
+    }
+
+    Ok(())
 }
 ```
 

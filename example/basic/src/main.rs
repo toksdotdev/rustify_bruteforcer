@@ -1,17 +1,16 @@
 extern crate rustify_bruteforcer;
 
+use std::io;
 use rustify_bruteforcer::prelude::*;
 
-fn main() {
+fn main() -> Result<(), io::Error> {
     let config = Config::new("AndroidAp", Some("belm2453".to_string()));
+    let mut bruteforcer = WifiBruteforcer::new(config)?;
 
-    let mut bruteforcer = match WifiBruteforcer::new(config) {
-        Ok(client) => client,
-        Err(err) => panic!("{}", err),
-    };
-
-    match bruteforcer.perform_attack() {
-        Ok(password) => println!("The password is: {}", password.unwrap()),
-        Err(err) => eprintln!("{}", err),
+    match bruteforcer.perform_attack()? {
+        Some(password) => println!("The password is: {}", password),
+        None => println!("Don't know what went wrong, but was unable to buteforce the network")
     }
+
+    Ok(())
 }

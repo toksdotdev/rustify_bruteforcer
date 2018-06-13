@@ -1,73 +1,54 @@
 use handlers::NetworkXmlProfileHandler;
 use network::Network;
-use std::fs;
 use std::io;
 use std::process::Command;
-use wifi::WifiBruteforcer;
 
-pub struct Windows {
-  name: String,
+const OUTPUT_XML_FILE_PATH: &str = "output.xml";
+
+#[cfg(target_os = "windows")]
+pub(crate) struct Windows {
+    name: String,
+    pub output_xml_path: String,
 }
 
 impl Windows {
-  pub fn new(name: String) -> Result<Self, io::Error> {
-    let profile_file_name = format!("netsh wlan add profile filename=\"{}\"", name);
+    pub fn new(name: &str) -> Result<Self, io::Error> {
+        let profile_file_name = format!("netsh wlan add profile filename=\"{}\"", name);
 
-    Command::new("cmd")
-      .args(&["/C", &profile_file_name[..]])
-      .output()?;
+        Command::new("cmd")
+            .args(&["/C", &profile_file_name[..]])
+            .output()?;
 
-    Ok(Windows { name })
-  }
+        Ok(Windows {
+            name: String::from(name),
+            output_xml_path: OUTPUT_XML_FILE_PATH.into(),
+        })
+    }
 }
 
 impl Network for Windows {
-  // type Machine = Self;
-  fn connect(&self, password: &str) -> bool {
-    let ssid = format!("netsh wlan connect name=\"{}\"", self.name);
-    let output = Command::new("cmd").args(&["/C", &ssid[..]]).output();
+    fn connect(&self, password: &str) -> bool {
+        {
+            let mut handler = NetworkXmlProfileHandler::new();
 
-    match output {
-      Ok(res) => res.status.success(),
-      Err(_) => false,
+            handler.content = handler
+                .content
+                .replace("{SSID}", &self.name)
+                .replace("{password}", password);
+
+            // Write details to new xml file
+            if let Err(err) = handler.to_file(&self.output_xml_path).map_err(|_err| false) {
+                return err;
+            }
+        }
+
+        let output = Command::new("netsh")
+            .args(&["wlan", "connect", &format!("name = \"{}\"", self.name)])
+            .output();
+
+        match output {
+            Ok(res) => res.status.success(),
+            Err(_) => false,
+        }
     }
-  }
-
-  fn perform_attack(&self, bruteforcer: &mut WifiBruteforcer) -> Result<Option<String>, io::Error> {
-    if bruteforcer.xml_handler.is_none() {
-      bruteforcer.xml_handler = Some(NetworkXmlProfileHandler::new()?);
-    }
-
-    // this safe to unwrap because of handling above
-    let original_xml_data = bruteforcer.xml_handler.unwrap().content.clone().unwrap();
-
-    // Generate password combination
-    let trial_passwords = bruteforcer.generate_all_possible_password();
-
-    // This needs GREAT improvement:
-    // Better approach: ?
-    for password in trial_passwords.iter() {
-      // Clone data
-      let mut temp_data = original_xml_data.clone();
-
-      // Replace SSID and password
-      let mut temp_data = temp_data.replace("{SSID}", bruteforcer.config.ssid);
-      let temp_data = temp_data.replace("{password}", password);
-      fs::write(bruteforcer.output_xml_path, &temp_data)?;
-
-      // Write details to new xml file
-      // THIS NEEDS TO BE MOVED TO A DIFFERENT METHOD (AS THIS ONLY WORKS FOR WINDOWS MACHINE)
-      bruteforcer
-        .xml_handler
-        .as_mut()
-        .unwrap()
-        .to_file(bruteforcer.output_xml_path)?;
-
-      if self.connect(password) {
-        return Ok(Some(password.to_string()));
-      }
-    }
-
-    Ok(None)
-  }
 }

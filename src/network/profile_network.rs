@@ -1,39 +1,29 @@
-use network::providers::{Linux, Windows};
+use network::providers::{Machine};
 use network::Network;
-use wifi::WifiBruteforcer;
-
 use std::io::{Error, ErrorKind};
 
+#[derive(Debug)]
 pub(crate) struct ProfileNetwork {
-  handler: Box<Network>,
+    handler: Box<Network>,
 }
 
 /// Profile Network handler responsible to connect to a wireless network.
 impl ProfileNetwork {
-  pub fn new(name: &str) -> Result<Self, Error> {
-    if cfg!(target_os = "windows") {
-      let handler = Windows::new(name.into())?;
-      return Ok(ProfileNetwork {
-        handler: Box::new(handler),
-      });
-    } else if cfg!(target_os = "linux") {
-      let handler = Linux::new(name.into())?;
-      return Ok(ProfileNetwork {
-        handler: Box::new(handler),
-      });
+    pub(crate) fn new(name: &str) -> Result<Self, Error> {
+        if !(cfg!(target_os = "linux") || cfg!(target_os = "windows")) {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "The Specified OS is not supported",
+            ));
+        }
+
+        let handler = Machine::new(name)?;
+        return Ok(ProfileNetwork {
+            handler: Box::new(handler),
+        });
     }
 
-    Err(Error::new(
-      ErrorKind::Other,
-      "The Specified OS is not supported",
-    ))
-  }
-
-  // pub fn connect(&self) -> bool {
-  //   self.handler.connect()
-  // }
-
-  pub fn perform_attack(&self, bruteforcer: &mut WifiBruteforcer) -> Result<Option<String>, Error> {
-    self.handler.perform_attack(bruteforcer)
-  }
+    pub(crate) fn connect(&self, password: &str) -> bool {
+        self.handler.connect(password)
+    }
 }

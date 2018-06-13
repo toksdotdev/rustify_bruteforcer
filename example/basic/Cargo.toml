@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Tochukwu Nkemdilim <nkemdilimtochukwu@gmail.com>"]
 
 [dependencies]
-rustify_bruteforcer = { path="../../", version="*" }
+rustify_bruteforcer = { path="../../../rustify_bruteforcer", version="*" }

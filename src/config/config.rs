@@ -1,25 +1,19 @@
-use config::bruteforce_patterns::BruteforcePattern;
-
+#[derive(Debug, Clone)]
 pub struct Config<'a> {
-  pub ssid: &'a str,
-  pub pattern_password: String,
-  // bruteforce_pattern: BruteforcePattern,
+    pub ssid: &'a str,
+    pub pattern_password: String,
 }
 
 impl<'a> Config<'a> {
-  pub fn new(ssid: &'a str, pattern_password: Option<String>) -> Self {
-    let (password, _pattern) = match pattern_password {
-      Some(expr) => (expr, BruteforcePattern::Pattern),
-      None => (
-        String::from("0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz <SP>!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"),
-        BruteforcePattern::Aggressive
-        )
-    };
+    pub fn new(ssid: &'a str, pattern_password: Option<&'a str>) -> Self {
+        let password = match pattern_password {
+            Some(expr) => expr,
+            None => "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz <SP>!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+        };
 
-    Config {
-      ssid,
-      pattern_password: password,
-      // bruteforce_pattern: pattern,
+        Config {
+            ssid,
+            pattern_password: String::from(password)
+        }
     }
-  }
 }

@@ -1,4 +1,4 @@
-pub(crate) enum BruteforcePattern {
-  Pattern,
-  Aggressive,
-}
+// enum BruteforcePattern {
+//     Pattern,
+//     Aggressive,
+// }
