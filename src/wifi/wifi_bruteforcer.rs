@@ -11,6 +11,11 @@ pub struct WifiBruteforcer<'a> {
     pub(crate) profile_network: ProfileNetwork,
 }
 
+
+fn factorial(number: usize) -> usize {
+    (1..=number).fold(1, |acc, x| acc * x)
+}
+
 /// The Bruteforcer module responsible for performing the attack.
 impl<'a> WifiBruteforcer<'a> {
     /// Creates a new instance of the bruteforcer encapsulates in a Result.
@@ -26,9 +31,8 @@ impl<'a> WifiBruteforcer<'a> {
 
     /// Generates permutatation of vectors of characters passed in, using
     /// a heap recusive strategy.
-    fn permutate_characters(&self, data: Vec<char>) -> Vec<String> {
-        let mut data = data.to_owned();
-        let mut permutations: Vec<String> = Vec::new();
+    fn permutate_characters(&self, mut data: Vec<char>) -> Vec<String> {
+        let mut permutations: Vec<String> = Vec::with_capacity(factorial(data.len()) + 1); 
 
         heap_recursive(&mut data, |p| {
             let w: String = p.to_vec().into_iter().collect();
